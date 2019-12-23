@@ -1,7 +1,9 @@
-import { Router, Request, Response } from 'express';
+import * as AWS from '../../../../aws';
+
+import { Request, Response, Router } from 'express';
+
 import { FeedItem } from '../models/FeedItem';
 import { requireAuth } from '../../users/routes/auth.router';
-import * as AWS from '../../../../aws';
 
 const router: Router = Router();
 
@@ -18,6 +20,16 @@ router.get('/', async (req: Request, res: Response) => {
 
 //@TODO
 //Add an endpoint to GET a specific resource by Primary Key
+router.get('/:id', async (req: Request, res: Response) => {
+    let { id } = req.params
+    const item = await FeedItem.findByPk(id);
+
+    if (!item) {
+        return res.status(404).send({ message: 'Entry not found' });
+    }
+
+    res.send(item);
+});
 
 // update a specific resource
 router.patch('/:id', 
@@ -34,6 +46,7 @@ router.get('/signed-url/:fileName',
     async (req: Request, res: Response) => {
     let { fileName } = req.params;
     const url = AWS.getPutSignedUrl(fileName);
+    console.log(fileName)
     res.status(201).send({url: url});
 });
 
